@@ -1,8 +1,8 @@
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-// Define the todos table schema with a text-based UUID for the `id` field
+
 export const todos_Table = sqliteTable("todos_table", {
-  id: text().primaryKey(),  // Define `id` as text to store UUIDs as strings
+  id: text().primaryKey(),  
   title: text().notNull(),
   status: text().notNull(),
   createdAt: text().notNull(),
