@@ -1,9 +1,8 @@
 import { Hono } from "hono";
 import { db } from "./db";
-import { todosTable } from "./db/schema";
+import { todos_Table } from "./db/schema";
 import { eq } from "drizzle-orm";
 
-// Initialize the Hono app
 const app = new Hono();
 
 // Error handler function
@@ -31,7 +30,7 @@ app.post("/todos", async (c) => {
     validateTodo(title);
 
     const todo = {
-      id: crypto.randomUUID(),  // Generate UUID for the `id`
+      id: crypto.randomUUID(), 
       title: title.trim(),
       status: "todo",
       createdAt: new Date().toISOString(),
@@ -39,7 +38,7 @@ app.post("/todos", async (c) => {
     };
 
     const [newTodo] = await db
-      .insert(todosTable)
+      .insert(todos_Table)
       .values(todo)
       .returning();
 
@@ -54,7 +53,7 @@ app.get("/todos", async (c) => {
   try {
     const todos = await db
       .select()
-      .from(todosTable)
+      .from(todos_Table)
       .all();
 
     return c.json(todos);
@@ -69,8 +68,8 @@ app.get("/todos/:id", async (c) => {
     const id = c.req.param("id");
     const todo = await db
       .select()
-      .from(todosTable)
-      .where(eq(todosTable.id, id))
+      .from(todos_Table)
+      .where(eq(todos_Table.id, id))
       .get();
 
     if (!todo) {
@@ -89,15 +88,15 @@ app.put("/todos/:id", async (c) => {
     const id = c.req.param("id");
     const { title, status } = await c.req.json();
 
-    // Validate title if it exists in the request body
+   
     if (title) {
       validateTodo(title);
     }
 
     const todo = await db
       .select()
-      .from(todosTable)
-      .where(eq(todosTable.id, id))
+      .from(todos_Table)
+      .where(eq(todos_Table.id, id))
       .get();
 
     if (!todo) {
@@ -105,13 +104,13 @@ app.put("/todos/:id", async (c) => {
     }
 
     const [updatedTodo] = await db
-      .update(todosTable)
+      .update(todos_Table)
       .set({
         title: title?.trim() ?? todo.title,
         status: status ?? todo.status,
         updatedAt: new Date().toISOString(),
       })
-      .where(eq(todosTable.id, id))
+      .where(eq(todos_Table.id, id))
       .returning();
 
     return c.json(updatedTodo);
@@ -126,15 +125,15 @@ app.delete("/todos/:id", async (c) => {
     const id = c.req.param("id");
     const todo = await db
       .select()
-      .from(todosTable)
-      .where(eq(todosTable.id, id))
+      .from(todos_Table)
+      .where(eq(todos_Table.id, id))
       .get();
 
     if (!todo) {
       return c.json({ error: 'Todo not found' }, 404);
     }
 
-    await db.delete(todosTable).where(eq(todosTable.id, id));
+    await db.delete(todos_Table).where(eq(todos_Table.id, id));
     return c.json({ message: 'Todo deleted successfully' });
   } catch (error) {
     return c.json(errorHandler(error), 400);
@@ -144,7 +143,7 @@ app.delete("/todos/:id", async (c) => {
 // Delete all todos
 app.delete("/todos", async (c) => {
   try {
-    await db.delete(todosTable).all();
+    await db.delete(todos_Table).all();
     return c.json({ message: 'All todos deleted successfully' });
   } catch (error) {
     return c.json(errorHandler(error), 400);
